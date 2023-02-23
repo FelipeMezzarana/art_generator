@@ -396,7 +396,7 @@ class ArtGenerator():
                 draw = ImageDraw.Draw(self.img)
                 draw.line(line_coords, fill= line_color,width = width, joint = 'curve')
                 
-                
+
     def draw_arc(self, fill_arc = True):
         """Draws one arc with random coordinates and color in the base image (self.img)
         
@@ -507,11 +507,17 @@ class ArtGenerator():
         self.img = self.img.filter(ImageFilter.BoxBlur(blur_factor))
 
 
-def create_caotic_art():
+def create_caotic_art(save_path = None,img_size= (600,400)):
+    """Return a random image with non-geometric features
+        
+    Keyword arguments:
+    save_path -- path without extension to save image (default dont save)
+    img_size -- 2-d tuple with (x,y) in pixels
+    """
 
     # p --  probabilities associated with each entry
     random_type = np.random.choice(['light','dark','white','black'], p = (0.45,0.45,0.05,0.05))
-    im = ArtGenerator(bg_type = random_type)
+    im = ArtGenerator(bg_type = random_type, img_size = img_size)
 
     im.alter_background()
     
@@ -542,15 +548,24 @@ def create_caotic_art():
     if choice == True:
         im.draw_points(randon_qty = True, select_quadrant = random.choice([True,False]))
 
+    # Save img
+    if save_path != None:
+        im.img.save(save_path + '.jpeg', format='jpeg')
+
     return im.img
 
 
-def create_geometric_art():
+def create_geometric_art(save_path = None, img_size= (600,400)):
+    """Return a random image with geometric features
+        
+    Keyword arguments:
+    save_path -- path without extension to save image (default dont save)
+    img_size -- 2-d tuple with (x,y) in pixels
+    """
 
     # p --  probabilities associated with each entry
     random_type = np.random.choice(['light','dark','white','black'], p = (0.425,0.425,0.05,0.1))
-    im = ArtGenerator(bg_type = random_type)
-
+    im = ArtGenerator(bg_type = random_type, img_size = img_size)
 
     im.alter_background()
     # choose 1 line effect 
@@ -573,8 +588,10 @@ def create_geometric_art():
     
     # Smooth lines
     im.smooth_lines(random_blur = False)
-            
 
+    # Save img  
+    if save_path != None:
+        im.img.save(save_path + '.jpeg', format='jpeg')
 
     return im.img
 
