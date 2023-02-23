@@ -1,4 +1,5 @@
-"""An ArtGenerator object has a main attribute: self.img 
+"""A module to create random and almost certainly unique artworks!
+Felipe S. Mezzarana 23.02.2023
 """
 
 import sys
@@ -507,7 +508,7 @@ class ArtGenerator():
         self.img = self.img.filter(ImageFilter.BoxBlur(blur_factor))
 
 
-def create_caotic_art(save_path = None,img_size= (600,400)):
+def create_chaotic_art(save_path = None,img_size= (600,400)):
     """Return a random image with non-geometric features
         
     Keyword arguments:
