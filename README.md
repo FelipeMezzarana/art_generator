@@ -1,10 +1,11 @@
-**A module to create random and almost certainly unique artworks!**
+# A Module to Create Random and Almost Certainly Unique Artworks!
 
-After seeing dozens of artificial intelligence projects to create artworks, I thought it would be cool to try something different. Instead of using a learning model, I wanted to develop something that could create artworks without any previous experience. This module is the result that I managed to achieve in a few days, mainly playing with Pillow libary and using concepts of probability and geometry.
+After seeing dozens of artificial intelligence projects to create artworks, I thought it would be cool to try something different. Instead of using a learning model, I wanted to develop something that could create artworks without any learning process. This module is the result that I managed to achieve in a few days, mainly playing with Pillow libary and using concepts of probability and geometry.
 
 Anyway, I liked the end result so I thought it was worth working on a detailed docstring and making the code available, in case anyone else finds it interesting
 
-# Generating Images From Predefined Functions
+# Usage
+## Generating Images From Predefined Functions
 
 **The easiest way to use this module is by calling the function create_geometric_art() or the function create_chaotic_art()**
 
@@ -14,6 +15,7 @@ Anyway, I liked the end result so I thought it was worth working on a detailed d
 ```python
 from ArtGenerator import create_geometric_art
 
+
 # Generating five random artworks with "geometric style"
 for i in range(5):
     im = create_geometric_art()
@@ -22,31 +24,31 @@ for i in range(5):
 
 
     
-![png](readme_files\output_3_0.png)
+![png](readme_files/output_3_0.png)
     
 
 
 
     
-![png](readme_files\output_3_1.png)
+![png](readme_files/output_3_1.png)
     
 
 
 
     
-![png](readme_files\output_3_2.png)
+![png](readme_files/output_3_2.png)
     
 
 
 
     
-![png](readme_files\output_3_3.png)
+![png](readme_files/output_3_3.png)
     
 
 
 
     
-![png](readme_files\output_3_4.png)
+![png](readme_files/output_3_4.png)
     
 
 
@@ -62,31 +64,31 @@ for i in range(5):
 
 
     
-![png](readme_files\output_4_0.png)
+![png](readme_files/output_4_0.png)
     
 
 
 
     
-![png](readme_files\output_4_1.png)
+![png](readme_files/output_4_1.png)
     
 
 
 
     
-![png](readme_files\output_4_2.png)
+![png](readme_files/output_4_2.png)
     
 
 
 
     
-![png](readme_files\output_4_3.png)
+![png](readme_files/output_4_3.png)
     
 
 
 
     
-![png](readme_files\output_4_4.png)
+![png](readme_files/output_4_4.png)
     
 
 
@@ -99,7 +101,7 @@ for i in range(5):
 This way you can see the image before deciding if you want to save it or not
 
 
-# Generating an Image with ArtGenerator Class
+## Generating an Image with ArtGenerator Class
 
 **Alternatively, you can directly use the class ArtGenerator to create artworks more personalized**
 
@@ -127,7 +129,7 @@ img_test.img
 
 
     
-![png](readme_files\output_9_0.png)
+![png](readme_files/output_9_0.png)
     
 
 
@@ -143,7 +145,7 @@ img_test.img
 
 
     
-![png](readme_files\output_10_0.png)
+![png](readme_files/output_10_0.png)
     
 
 
@@ -159,7 +161,7 @@ img_test.img
 
 
     
-![png](readme_files\output_11_0.png)
+![png](readme_files/output_11_0.png)
     
 
 
@@ -175,7 +177,7 @@ img_test.img
 
 
     
-![png](readme_files\output_12_0.png)
+![png](readme_files/output_12_0.png)
     
 
 
@@ -191,7 +193,7 @@ img_test.img
 
 
     
-![png](readme_files\output_13_0.png)
+![png](readme_files/output_13_0.png)
     
 
 
@@ -207,7 +209,7 @@ img_test.img
 
 
     
-![png](readme_files\output_14_0.png)
+![png](readme_files/output_14_0.png)
     
 
 
