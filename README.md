@@ -15,7 +15,6 @@ Anyway, I liked the end result so I thought it was worth working on a detailed d
 ```python
 from ArtGenerator import create_geometric_art
 
-
 # Generating five random artworks with "geometric style"
 for i in range(5):
     im = create_geometric_art()
