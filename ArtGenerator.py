@@ -6,12 +6,14 @@ import sys
 from PIL import Image, ImageDraw, ImageFilter
 import random
 import numpy as np
-
+import re
+import os
+from datetime import datetime
 
 class ArtGenerator():
     """An ArtGenerator object has a main attribute: self.img 
     * When the object is created self.img is set as a clean image.
-    This "base image" will have background color and dimensions according to args in __init__
+    This "base image" will have background color and dimensions according to args in __init__ and can be altered with a series of methods:
     * Methods to draw shapes with random characteristics (position, length, quantity, size, etc.) in self.img:
         - draw_vertical_lines
         - draw_horizontal_lines
@@ -29,7 +31,7 @@ class ArtGenerator():
     """
 
     
-    def __init__(self, bg_type = 'white', img_size = (600,400)):
+    def __init__(self, bg_type:str = 'white', img_size:tuple = (600,400)):
         """initialize object and creates the base image
         * The image backgorund color will be selected according to "bg_type",
         bg_type 'light' or 'dark' creates a random background color
@@ -58,7 +60,7 @@ class ArtGenerator():
         self.img =  Image.new('RGB',img_size,color=rgb_color) 
 
         
-    def create_color(self,contrast = True):
+    def create_color(self,contrast:bool = True):
         """Return a random RGB color based on the background_type (bg_type)
         * The selection range used will aim to create a color that
         contrast with the background color.
@@ -85,27 +87,37 @@ class ArtGenerator():
         return color
     
     
-    def alter_background(self):
+    def alter_background(self,repeat:int = None, allow_circle:bool = True):
         """Changes the background randomly, possibilities:
         * Splits the screen into 2-4 random colors (rectangular) 
         * Adds a half circle between endpoints
         * A mix of the above two options
+
+        Keyword arguments:
+        repeat -- How many times the operation will be repeated (default 50% chance to repeat once
+        allow_circle -- Allows there is a chance to change the background with a semi-circular shape.
+        If false, only rectangular shapes will be added (default Allowed)
         """
         
         # 50% chance to change background twice
-        repeat_operation = random.randrange(1,3)
+        if repeat == None:
+            repeat = random.randrange(1,3)
         
         draw = ImageDraw.Draw(self.img)
-        for i in range(repeat_operation):
+        for i in range(repeat):
             color = self.create_color(contrast =  random.choice([True,False]))
             
             # Randomly select change type 
-            if i == 0:
-                random_option = random.randrange(1,9)
-            # In the 2nd loop select only rectangular shapes, Arcs doesn't look good when multiplied
-            else:
+            if allow_circle == True:
+                if i == 0:
+                    random_option = random.randrange(1,9)
+                # In the 2nd loop select only rectangular shapes, Arcs doesn't look good when multiplied
+                else:
+                    random_option = random.randrange(1,4) 
+            # Chose only retangular shapes
+            elif allow_circle == False:
                 random_option = random.randrange(1,4) 
-                
+                  
             if random_option == 1:
                 # 1/3 rectangle (divede divide height)
                 draw.rectangle((0,0,self.img.size[0],self.img.size[1]/3), fill=color, outline=0, width=1)
@@ -136,7 +148,7 @@ class ArtGenerator():
                 pass
 
             
-    def add_curve_effect(self,corner_choice = None):
+    def add_curve_effect(self,corner_choice:str = None):
         """ Draws a sequence of lines that creates the impression of a curve
         If corner_choice is not set the effect will be randomly draw to one position option.
         
@@ -198,9 +210,12 @@ class ArtGenerator():
                            line_coords[3]+ i*line_space), fill= color,width = 1)
 
     
-    def draw_vertical_lines(self):
+    def draw_vertical_lines(self,repeat:int = None):
         """Draws a sequence of vertical parallel lines
         * Number of lines and spacing will be random
+
+        Keyword arguments:
+        repeat -- How many times the operation will be repeated (default 50% chance to repeat once)
         """
         
         # Coordinates of first line
@@ -213,8 +228,9 @@ class ArtGenerator():
         draw = ImageDraw.Draw(self.img)
         color = self.create_color()
         # 50% chance to repeat the drawing in the same coordinates but with different args
-        qty_group = random.randrange(1,3)
-        for n in range(qty_group):
+        if repeat == None:
+            repeat = random.randrange(1,3)
+        for n in range(repeat):
             line_space = random.randrange(5,20) # Random space between lines
             for i in range(random.randrange(7,25)):
                 # Randon incremental increase in coord points x1 and x2 keeping  y1 and y2 fixed
@@ -224,9 +240,12 @@ class ArtGenerator():
                            line_coords[3]), fill= color,width = 1)
      
      
-    def draw_horizontal_lines(self):
+    def draw_horizontal_lines(self,repeat:int = None):
         """Draws a sequence of horizontal parallel lines
         * Number of lines and lines spacing will be random
+
+        Keyword arguments:
+        repeat -- How many times the operation will be repeated (default 50% chance to repeat once)
         """
     
         # Coordinates of first line
@@ -241,8 +260,9 @@ class ArtGenerator():
         color = self.create_color()
         
         # 50% chance to repeat the drawing in the same coordinates but with different args
-        qty_group = random.randrange(1,3)
-        for n in range(qty_group):
+        if repeat == None:
+            repeat = random.randrange(1,3)
+        for n in range(repeat):
             for i in range(random.randrange(7,25)):
                 line_space = random.randrange(5,20) # Random space between lines
                 # Incremental increase in coord points y1 and x2 keeping  x2 and y1 fixed
@@ -253,9 +273,12 @@ class ArtGenerator():
                           fill= color,width = 1)
             
             
-    def draw_diagonal_lines(self):
+    def draw_diagonal_lines(self,repeat:int = None):
         """Draws a sequence of vertical parallel lines
         * Number of lines and spacing will be random
+
+        Keyword arguments:
+        repeat -- How many times the operation will be repeated (default 50% chance to repeat once)
         """
         
         # Set start coord
@@ -270,8 +293,9 @@ class ArtGenerator():
         draw = ImageDraw.Draw(self.img)
         color = self.create_color()
         # 50% chance to repeat the drawing in the same coordinates but with different args
-        qty_group = random.randrange(1,3)
-        for n in range(qty_group):
+        if repeat == None:
+            repeat = random.randrange(1,3)
+        for n in range(repeat):
             line_space = random.randrange(5,20)
             for i in range(random.randrange(10,40)):
                 draw.line((line_coords[0]+ i*line_space,
@@ -280,11 +304,15 @@ class ArtGenerator():
                            line_coords[3]+ i*line_space), fill= color,width = 1)
 
     
-    def draw_regular_polygon(self):
+    def draw_regular_polygon(self,n_sides = None, radius = None):
         """Draws a random polygon (3,4,5,7,8,12,60 ~circle) in self.img
         * The size of the polygon will also be random
         * Will always be positioned in the middle of the x axis
         * Can have three positions on the y-axis, center, top or bottom
+
+        Keyword arguments:
+        n_sides -- Defines the type of polygon, e.g. n_sides=3 draws a triangle (default random)
+        radius -- The polygon radius (default random value between 50 and 150)
         """
         
         draw = ImageDraw.Draw(self.img)
@@ -296,8 +324,15 @@ class ArtGenerator():
                                  self.img.size[1]/2 + self.img.size[1]/8,
                                  self.img.size[1]/2 - self.img.size[1]/8])
         # draw random polygon 
-        n_sides =  np.random.choice([3,4,5,7,8,12,60], p = (0.22,0.13,0.13,0.13,0.13,0.13,0.13))
-        draw.regular_polygon((point_x, point_y,random.randrange(50,150) ),
+        if n_sides == None:
+            n_sides =  np.random.choice([3,4,5,7,8,12,60], p = (0.22,0.13,0.13,0.13,0.13,0.13,0.13))
+        elif n_sides not in [3,4,5,7,8,12,60]:
+            raise Exception('n_sides must 3,4,5,7,8,12 or 60')
+
+        if radius == None:
+            radius = random.randrange(50,150) 
+        
+        draw.regular_polygon((point_x, point_y,radius),
                              int(n_sides),
                              fill=color,
                              outline=random.choice([0,None]))
@@ -350,7 +385,7 @@ class ArtGenerator():
                      width=1)
         
 
-    def draw_line(self,qnt_lines = 1,random_qnt_lines = False,width = 1,sequential_lines = True):
+    def draw_line(self,qnt_lines:int = 1,random_qnt_lines:bool = False,width:int = 1,sequential_lines:bool = True):
         """Draws one or more lines with random coordinates and color in the base image (self.img)
         
         Keyword arguments:
@@ -398,7 +433,7 @@ class ArtGenerator():
                 draw.line(line_coords, fill= line_color,width = width, joint = 'curve')
                 
 
-    def draw_arc(self, fill_arc = True):
+    def draw_arc(self, fill_arc:bool = True):
         """Draws one arc with random coordinates and color in the base image (self.img)
         
         Keyword arguments:
@@ -459,7 +494,7 @@ class ArtGenerator():
         draw.ellipse(elp_coords, fill=elp_color, width=1)
         
         
-    def draw_points(self,pts_qty = 10, randon_qty = True, select_quadrant = True):
+    def draw_points(self,pts_qty:int = 10, randon_qty:bool = True, select_quadrant:bool = True):
         """Draws points in the base image (self.img)
         
         Keyword arguments:
@@ -491,7 +526,7 @@ class ArtGenerator():
                 draw.point(random_coord, fill=points_color)
                                       
                                          
-    def smooth_lines(self, random_blur = True):
+    def smooth_lines(self, random_blur:bool = True):
         """Smooth lines by a random factor or by 0.5 (slightly smooth) 
         
         Keyword arguments:
@@ -508,7 +543,39 @@ class ArtGenerator():
         self.img = self.img.filter(ImageFilter.BoxBlur(blur_factor))
 
 
-def create_chaotic_art(save_path = None,img_size= (600,400)):
+    def save_img(self,path:str = None):
+        """Save the image with .jpeg format 
+        * if path is not set an  unique name will be chosen for the file for the file, preventing overwritten 
+        
+        Keyword arguments:
+        path -- save file path (default workdir)
+        """
+        
+        # Save img in user defined path
+        if path != None:
+            if re.search('.jpeg',path):
+                self.img.save(path , format='jpeg')
+            else:
+                self.img.save(path + '.jpeg' , format='jpeg')
+        # Save img in workdir
+        else:
+            # Finds a unique name for the file, preventing files from being overwritten
+            files = os.listdir(path)
+            today = datetime.today().strftime('%Y-%m-%d')
+            first_option_name = 'img '+  today + '.jpeg'
+            if first_option_name in files:
+                counter = 1
+                while True:
+                    file_name = 'img'+ str(counter) + ' ' + today + '.jpeg'
+                    counter+=1
+                    if file_name not in files:
+                        break
+                self.img.save(file_name + '.jpeg' , format='jpeg')
+            else:
+                self.img.save(first_option_name + '.jpeg' , format='jpeg')
+
+
+def create_chaotic_art(save_path:str = None,img_size:tuple = (600,400)):
     """Return a random image with non-geometric features
         
     Keyword arguments:
@@ -556,7 +623,7 @@ def create_chaotic_art(save_path = None,img_size= (600,400)):
     return im.img
 
 
-def create_geometric_art(save_path = None, img_size= (600,400)):
+def create_geometric_art(save_path:str = None, img_size:tuple= (600,400)):
     """Return a random image with geometric features
         
     Keyword arguments:
