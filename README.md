@@ -104,8 +104,8 @@ This way you can see the image before deciding if you want to save it or not
 
 **Alternatively, you can directly use the class ArtGenerator to create artworks more personalized**
 
-+ When an ArtGenerator object is a "base" image is generated and saved as the attribute self.img
-+ The class has a series of methods that change the base image with elements of different types and random properties
++ When an ArtGenerator object is created a "base" image is generated and saved as the attribute self.img
++ The Class has a series of methods that change the base image with elements of different types and random properties
 
 **The docstrings of the code are very explanatory, so instead of exhaustively explaining what each method does, I'll show you a practical example of how to generate images this way, and invite you to enter help(ArtGenerator) and explore the methods**
 
