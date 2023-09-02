@@ -58,7 +58,6 @@ class ArtGenerator():
 
         # Create a new image
         self.img =  Image.new('RGB',img_size,color=rgb_color) 
-
         
     def create_color(self,contrast:bool = True):
         """Return a random RGB color based on the background_type (bg_type)
@@ -69,7 +68,7 @@ class ArtGenerator():
         contrast -- if False, select a color with the same contrast as the background (default !=contrast)
         """
         
-        # Selecta a color that contrast with background
+        # Select a color that contrast with background
         if contrast == True:
             if self.bg_type == 'white' or self.bg_type == 'light':
                 # selects a random color from a low-intensity spectrum
@@ -86,8 +85,7 @@ class ArtGenerator():
         
         return color
     
-    
-    def alter_background(self,repeat:int = None, allow_circle:bool = True):
+    def alter_background(self,repeat:int = None, allow_circle:bool = True,random_contrast:bool=False):
         """Changes the background randomly, possibilities:
         * Splits the screen into 2-4 random colors (rectangular) 
         * Adds a half circle between endpoints
@@ -105,8 +103,11 @@ class ArtGenerator():
         
         draw = ImageDraw.Draw(self.img)
         for i in range(repeat):
-            color = self.create_color(contrast =  random.choice([True,False]))
-            
+            if random_contrast:
+                color = self.create_color(contrast =  random.choice([True,False]))
+            else:
+                color = self.create_color(contrast = False)
+
             # Randomly select change type 
             if allow_circle == True:
                 if i == 0:
@@ -146,8 +147,7 @@ class ArtGenerator():
             elif random_option ==8:
                 # Does not change background
                 pass
-
-            
+          
     def add_curve_effect(self,corner_choice:str = None):
         """ Draws a sequence of lines that creates the impression of a curve
         If corner_choice is not set the effect will be randomly draw to one position option.
@@ -195,9 +195,9 @@ class ArtGenerator():
                 
         elif corner_choice =='middle':
             # Coordinates of first line
-            point_x1 = random.randrange(self.img.size[0],self.img.size[0]*1.4)
-            point_y1 = random.randrange(self.img.size[1]*0.8,self.img.size[1]*1.2)
-            point_x2 = random.randrange(self.img.size[0]*-0.3,0)
+            point_x1 = random.randrange(self.img.size[0], int(self.img.size[0]*1.4))
+            point_y1 = random.randrange(int(self.img.size[1]*0.8),int(self.img.size[1]*1.2))
+            point_x2 = random.randrange(int(self.img.size[0]*-0.3),0)
             point_y2 = self.img.size[1]-point_x1
             line_coords = [point_x1,point_y1,point_x2,point_y2]
 
@@ -208,8 +208,7 @@ class ArtGenerator():
                            line_coords[1] ,
                            line_coords[2],
                            line_coords[3]+ i*line_space), fill= color,width = 1)
-
-    
+ 
     def draw_vertical_lines(self,repeat:int = None):
         """Draws a sequence of vertical parallel lines
         * Number of lines and spacing will be random
@@ -238,8 +237,7 @@ class ArtGenerator():
                            line_coords[1] ,
                            line_coords[2]+ i*line_space,
                            line_coords[3]), fill= color,width = 1)
-     
-     
+        
     def draw_horizontal_lines(self,repeat:int = None):
         """Draws a sequence of horizontal parallel lines
         * Number of lines and lines spacing will be random
@@ -250,7 +248,7 @@ class ArtGenerator():
     
         # Coordinates of first line
         point_x = 0
-        point_y = random.randrange(0,self.img.size[1]*0.8)
+        point_y = random.randrange(0,int(self.img.size[1]*0.8))
         point_x2 = self.img.size[0]
         point_y2 = point_y
         line_coords = [point_x,point_y,point_x2,point_y2]
@@ -271,8 +269,7 @@ class ArtGenerator():
                            line_coords[2],
                            line_coords[3]+ i*line_space),
                           fill= color,width = 1)
-            
-            
+                      
     def draw_diagonal_lines(self,repeat:int = None):
         """Draws a sequence of vertical parallel lines
         * Number of lines and spacing will be random
@@ -282,8 +279,8 @@ class ArtGenerator():
         """
         
         # Set start coord
-        point_x1 = random.choice([random.randrange(self.img.size[0]*-0.2,self.img.size[0]*0.5),
-                   random.randrange(self.img.size[0]*0.8,self.img.size[0]*1.6)])
+        point_x1 = random.choice([random.randrange(int(self.img.size[0]*-0.2),int(self.img.size[0]*0.5)),
+                   random.randrange(int(self.img.size[0]*0.8),int(self.img.size[0]*1.6))])
         point_y1 = 0
         point_x2 = 0
         point_y2 = point_x1
@@ -302,8 +299,7 @@ class ArtGenerator():
                            line_coords[1] ,
                            line_coords[2],
                            line_coords[3]+ i*line_space), fill= color,width = 1)
-
-    
+  
     def draw_regular_polygon(self,n_sides = None, radius = None):
         """Draws a random polygon (3,4,5,7,8,12,60 ~circle) in self.img
         * The size of the polygon will also be random
@@ -330,14 +326,13 @@ class ArtGenerator():
             raise Exception('n_sides must 3,4,5,7,8,12 or 60')
 
         if radius == None:
-            radius = random.randrange(50,150) 
+            radius = random.randrange(75,175) 
         
         draw.regular_polygon((point_x, point_y,radius),
                              int(n_sides),
                              fill=color,
                              outline=random.choice([0,None]))
-        
-        
+             
     def draw_artistic_polygon(self):
         """Draws a random irregular polygon with 100 sides in self.img
         * The position and colors will be random
@@ -345,8 +340,8 @@ class ArtGenerator():
         """
         
         # first point
-        point_x = random.randrange(self.img.size[0]*0.1, self.img.size[0]*0.9)
-        point_y = random.randrange(self.img.size[1]*0.1, self.img.size[1]*0.9)
+        point_x = random.randrange(int(self.img.size[0]*0.1), int(self.img.size[0]*0.9))
+        point_y = random.randrange(int(self.img.size[1]*0.1), int(self.img.size[1]*0.9))
         poly_coords = [point_x,point_y]
 
         # X coordinate constraints
@@ -384,7 +379,6 @@ class ArtGenerator():
                      outline=None, # 50% chance to have a contour
                      width=1)
         
-
     def draw_line(self,qnt_lines:int = 1,random_qnt_lines:bool = False,width:int = 1,sequential_lines:bool = True):
         """Draws one or more lines with random coordinates and color in the base image (self.img)
         
@@ -432,7 +426,6 @@ class ArtGenerator():
                 draw = ImageDraw.Draw(self.img)
                 draw.line(line_coords, fill= line_color,width = width, joint = 'curve')
                 
-
     def draw_arc(self, fill_arc:bool = True):
         """Draws one arc with random coordinates and color in the base image (self.img)
         
@@ -466,8 +459,7 @@ class ArtGenerator():
             draw.chord(arc_coords, start_angle, end_angle, fill=arc_color, width=1)
         elif fill_arc == False:
             draw.arc(arc_coords, start_angle, end_angle, fill=arc_color, width=1)
-
-            
+           
     def draw_ellipse(self):
         """Draws one ellipse with random coordinates and color in the base image (self.img)
         """
@@ -492,8 +484,7 @@ class ArtGenerator():
     
         draw = ImageDraw.Draw(self.img)
         draw.ellipse(elp_coords, fill=elp_color, width=1)
-        
-        
+              
     def draw_points(self,pts_qty:int = 10, randon_qty:bool = True, select_quadrant:bool = True):
         """Draws points in the base image (self.img)
         
@@ -524,8 +515,7 @@ class ArtGenerator():
             for p in range(pts_qty):
                 random_coord = (random.randrange(x_min,x_max),random.randrange(y_min,y_max))
                 draw.point(random_coord, fill=points_color)
-                                      
-                                         
+                                                                             
     def smooth_lines(self, random_blur:bool = True):
         """Smooth lines by a random factor or by 0.5 (slightly smooth) 
         
@@ -541,7 +531,6 @@ class ArtGenerator():
         # Apply filters
         self.img = self.img.filter(ImageFilter.SMOOTH_MORE)
         self.img = self.img.filter(ImageFilter.BoxBlur(blur_factor))
-
 
     def save_img(self,path:str = None):
         """Save the image with .jpeg format 
@@ -575,7 +564,7 @@ class ArtGenerator():
                 self.img.save(first_option_name + '.jpeg' , format='jpeg')
 
 
-def create_chaotic_art(save_path:str = None,img_size:tuple = (600,400)):
+def create_chaotic_art(save_path:str = None,img_size:tuple = (600,400),style:str='random'):
     """Return a random image with non-geometric features
         
     Keyword arguments:
@@ -584,8 +573,10 @@ def create_chaotic_art(save_path:str = None,img_size:tuple = (600,400)):
     """
 
     # p --  probabilities associated with each entry
-    random_type = np.random.choice(['light','dark','white','black'], p = (0.45,0.45,0.05,0.05))
-    im = ArtGenerator(bg_type = random_type, img_size = img_size)
+    if style=='random':
+        style = np.random.choice(['light','dark','white','black'], p = (0.45,0.45,0.05,0.05))
+
+    im = ArtGenerator(bg_type = style, img_size = img_size)
 
     im.alter_background()
     
@@ -623,7 +614,7 @@ def create_chaotic_art(save_path:str = None,img_size:tuple = (600,400)):
     return im.img
 
 
-def create_geometric_art(save_path:str = None, img_size:tuple= (600,400)):
+def create_geometric_art(save_path:str = None, img_size:tuple= (600,400),style:str='random'):
     """Return a random image with geometric features
         
     Keyword arguments:
@@ -632,8 +623,10 @@ def create_geometric_art(save_path:str = None, img_size:tuple= (600,400)):
     """
 
     # p --  probabilities associated with each entry
-    random_type = np.random.choice(['light','dark','white','black'], p = (0.425,0.425,0.05,0.1))
-    im = ArtGenerator(bg_type = random_type, img_size = img_size)
+    if style=='random':
+        style = np.random.choice(['light','dark','white','black'], p = (0.425,0.425,0.05,0.1))
+
+    im = ArtGenerator(bg_type = style, img_size = img_size)
 
     im.alter_background()
     # choose 1 line effect 
@@ -652,7 +645,6 @@ def create_geometric_art(save_path:str = None, img_size:tuple= (600,400)):
     polygon_draw = np.random.choice([True,False], p = (0.9,0.1))
     if polygon_draw == True:
         im.draw_regular_polygon()
-    
     
     # Smooth lines
     im.smooth_lines(random_blur = False)
