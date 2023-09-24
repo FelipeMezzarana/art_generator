@@ -9,6 +9,7 @@ import numpy as np
 import re
 import os
 from datetime import datetime
+import logging
 
 class ArtGenerator():
     """An ArtGenerator object has a main attribute: self.img 
@@ -59,33 +60,48 @@ class ArtGenerator():
         # Create a new image
         self.img =  Image.new('RGB',img_size,color=rgb_color) 
         
-    def create_color(self,contrast:bool = True):
+    def create_color(self,contrast:bool = True,intensity:float = None):
         """Return a random RGB color based on the background_type (bg_type)
         * The selection range used will aim to create a color that
         contrast with the background color.
         
         Keyword arguments:
         contrast -- if False, select a color with the same contrast as the background (default !=contrast)
+        intensity -- value 0-10 can be used to define color spectrum range. 
         """
         
         # Select a color that contrast with background
-        if contrast == True:
-            if self.bg_type == 'white' or self.bg_type == 'light':
-                # selects a random color from a low-intensity spectrum
-                color = tuple([random.randrange(50,100) for i in range(3)])
-            elif self.bg_type == 'black' or self.bg_type == 'dark':
-                # Selects a random color from a high-intensity spectrum
-                color = tuple([random.randrange(100,200) for i in range(3)])
-        # Select colors that don't contrast with background
+        if intensity is None:
+            if contrast == True:
+                if self.bg_type == 'white' or self.bg_type == 'light':
+                    # selects a random color from a low-intensity spectrum
+                    color = tuple([random.randrange(50,100) for i in range(3)])
+                elif self.bg_type == 'black' or self.bg_type == 'dark':
+                    # Selects a random color from a high-intensity spectrum
+                    color = tuple([random.randrange(100,200) for i in range(3)])
+            # Select colors that don't contrast with background
+            else:
+                if self.bg_type == 'white' or self.bg_type == 'light':
+                    color = tuple([random.randrange(100,200) for i in range(3)])
+                elif self.bg_type == 'black' or self.bg_type == 'dark':
+                    color = tuple([random.randrange(50,100) for i in range(3)])
         else:
-            if self.bg_type == 'white' or self.bg_type == 'light':
-                color = tuple([random.randrange(100,200) for i in range(3)])
-            elif self.bg_type == 'black' or self.bg_type == 'dark':
-                color = tuple([random.randrange(50,100) for i in range(3)])
-        
+            # intensity based color
+            rgb_intensity = 255 - int((intensity / 10) * 255)
+            if rgb_intensity>127:
+                color = tuple([random.randrange(rgb_intensity-50,rgb_intensity) for i in range(3)])
+            else:
+                color = tuple([random.randrange(rgb_intensity,rgb_intensity+50) for i in range(3)])
+
+        logging.debug(f'Color {color}, intensity:{intensity}')
         return color
     
-    def alter_background(self,repeat:int = None, allow_circle:bool = True,random_contrast:bool=False):
+    def alter_background(
+            self,
+            repeat:int = None, 
+            allow_circle:bool = True,
+            random_contrast:bool=False,
+            intensity:float = None):
         """Changes the background randomly, possibilities:
         * Splits the screen into 2-4 random colors (rectangular) 
         * Adds a half circle between endpoints
@@ -104,9 +120,9 @@ class ArtGenerator():
         draw = ImageDraw.Draw(self.img)
         for i in range(repeat):
             if random_contrast:
-                color = self.create_color(contrast =  random.choice([True,False]))
+                color = self.create_color(contrast =  random.choice([True,False]),intensity=intensity)
             else:
-                color = self.create_color(contrast = False)
+                color = self.create_color(contrast = False,intensity=intensity)
 
             # Randomly select change type 
             if allow_circle == True:

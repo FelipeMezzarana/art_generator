@@ -24,6 +24,7 @@ class App(toga.App):
         """
         self.style = 'light'
         self.icons_path = str(self.paths.app) + "/resources/command_icons/"
+        self.app_path = str(self.paths.app) # For ExitHandler
         # Lazy initialization
         self.draw_steps = []
         self.view = None 
@@ -54,8 +55,6 @@ class App(toga.App):
                 padding=(0,120,25,120),
                 alignment = 'center',
                 direction = ROW,
-                #font_family = 'fantas
-                #font_weight = 'bold',
                 font_size = 14,
                 flex =1,
                 background_color = 'white'
@@ -106,79 +105,85 @@ class App(toga.App):
         self.main_window.show()
 
     def draw_art_windows(self,widget):
-        
+        """Create the draw art windows in self.draw_art_box.
+        """
+        # Lazy initialization
+        self.create_art_view = None 
+        self.last_step = 0
+
         self.style = 'light'
         # Initialize ArtGenerator Object
         size = self.main_window.size
         self.art_obj = ArtGenerator(
             bg_type = 'white',
-            img_size =(int(size[0])+55,int(size[1]))
+            img_size =(int(size[0])+79,int(size[1]))
             )
-        self.art_obj.save_img(str(self.paths.app )+ "/img/step_00.jpeg")
-        # Save current state
-        self.draw_steps.append(self.art_obj)
 
         self.draw_art_box = toga.Box(
             children = [],
             style=Pack(
                 direction=COLUMN,
-                background_color= 'white',
+                #background_color= 'white',
+                background_color= '#D9DDC4',
                 alignment='bottom',
                 )
         )
-
+        # Standard style
         draw_pack = Pack(
-            padding=10,
+            padding=7,
             font_family='serif',
             font_weight='bold',
             font_size=14,
             alignment = 'bottom',
             background_color = 'white',
-            width = 100)
-        
-        self.switch_style = toga.Switch(
-                    'Dark Mode',
-                    on_change=lambda widget: self.change_style(widget),
-                    style=Pack(
-                        padding=7,
-                        font_size=10,
-                        alignment = 'right',
-                        color = '#9da39e',
-                        width = 80)
-                    )
-        #toga.Slider(range=(-5, 10), value=7, on_change=my_callback)
-
+            width = 50)
+    
         self.draw_buttons = toga.Box(
-            children = [        
-                toga.Button(
-                    "Background",
+            children = [      
+                toga.Label(
+                    "Choose a Background",
+                    style=Pack(
+                        padding=(7,0,10,10),
+                        font_size=18,
+                        alignment = 'right',
+                        background_color= '#D9DDC4',
+                        width = 200)
+                ),
+            toga.Button(
+                    "+",
                     on_press=lambda widget:self.change_background(widget),
                     style=draw_pack
                 ),
-                toga.Selection(
-                    items=[
-                        'Lines','Vortex','Polygon', 'Arc','Ellipse'],
-                    style=draw_pack, 
-                    on_select=None
-                    ),
-                self.switch_style, 
-            ],
+            toga.Button(
+                    "⏎",
+                    on_press=lambda widget:self.get_last_state(widget),
+                    style=draw_pack
+                ),
+            toga.Button(
+                    "Next!",
+                    on_press=lambda widget:self.get_last_state(widget),
+                    style=draw_pack
+                )            ],
             style=Pack(
                 direction=ROW,
-                background_color= 'white'
+                background_color= '#D9DDC4'
                 )
             )
-     
+        
+        self.intensity_slider = toga.Slider(
+            range=(0, 10),
+            value=5,
+            on_change=self.change_intensity,
+            style=Pack(
+                padding=(0,0,4,0)))
         self.draw_art_box.add(self.draw_buttons)
+        self.draw_art_box.add(self.intensity_slider)
+
         self.main_window.content = self.draw_art_box
 
-        if self.draw_view:
-            self.draw_art_box.remove(self.draw_view)
-        my_image = toga.Image(self.paths.app / "img/step_00.jpeg")
-        self.draw_view = toga.ImageView(my_image,style=Pack(direction=COLUMN))
-        self.draw_art_box.add(self.draw_view)
-
     def random_art_windows(self, widget):
+        """Create the random art windows in self.random_art_box.
+        """
 
         self.style = 'light'
         self.random_art_box = toga.Box(
@@ -190,7 +195,8 @@ class App(toga.App):
                 )
         )
 
-        button_pack = Pack(
+        # Standard style
+        random_pack = Pack(
             padding=2,
             font_family='serif',
             font_weight='bold',
@@ -214,12 +220,12 @@ class App(toga.App):
                 toga.Button(
                     "Geometric",
                     on_press=lambda widget:self.create_random_art(widget,'geometric'),
-                    style=button_pack
+                    style=random_pack
                 ),
                 toga.Button(
                     "Chaotic",
                     on_press=lambda widget:self.create_random_art(widget,'chaotic'),
-                    style=button_pack
+                    style=random_pack
                 ),
                 self.switch_style, 
             ],
@@ -269,13 +275,13 @@ class App(toga.App):
         if type == 'chaotic':
             _ = create_chaotic_art(
                 save_path = str(self.paths.app) + "/test",
-                img_size =(int(size[0])+55,int(size[1])),
+                img_size =(int(size[0])+79,int(size[1])),
                 style = self.style
                 )
         elif type == 'geometric':
             _ = create_geometric_art(
                 save_path = str(self.paths.app) + "/test",
-                img_size =(int(size[0])+55,int(size[1])),
+                img_size =(int(size[0])+79,int(size[1])),
                 style = self.style
                 )
         if self.view:
@@ -285,31 +291,88 @@ class App(toga.App):
         self.random_art_box.add(self.view)
         
     def change_background(self, widget):
-
-        self.art_obj.alter_background()
-        self.find_last_stpe() # update last self.last_step
-        self.art_obj.save_img(str(self.paths.app )+ "/img/step_" + self.next_step + ".jpeg")
+        """Alter background. 
+        Color based on slider value.
+        """
+        self.current_steap = "background"
+        self.art_obj.alter_background(intensity = self.intensity_slider.value)
+        self.add_step() # update last self.last_step
+        self.art_obj.save_img(str(self.paths.app )+ "/img/background" + self.next_step + ".jpeg")
         # Save current state
         self.draw_steps.append(self.art_obj)
-        self.background_step = True 
 
-    def find_last_stpe(self):
+        if self.create_art_view:
+            self.draw_art_box.remove(self.create_art_view)
+        my_image = toga.Image(str(self.paths.app )+ "/img/background" + self.next_step + ".jpeg")
+        self.create_art_view = toga.ImageView(my_image,style=Pack(direction=COLUMN))
+        self.draw_art_box.add(self.create_art_view)
+
+    def get_last_state(self,widget):
+        """Return create_art_view to last state.
+        """
+        logging.debug(self.last_step)
+        if self.create_art_view and self.last_step > 0:
+            self.draw_art_box.remove(self.create_art_view)
+            last_file_name = self.current_steap + self.last_step_str + ".jpeg"
+            my_image = toga.Image(str(self.paths.app )+ "/img/" + last_file_name)
+            self.create_art_view = toga.ImageView(my_image,style=Pack(direction=COLUMN))
+            self.draw_art_box.add(self.create_art_view)
+            self.remove_step()
+        elif self.create_art_view:
+            self.draw_art_box.remove(self.create_art_view)
+            #self.remove_step()
+
+        logging.debug(self.last_step)
+        
+    
+    def remove_step(self):
+        """Returns str value referring to the last step
+        """
+
+        # Update art obj
+        current_file_name = self.current_steap + self.next_step + ".jpeg"
+        os.remove(str(self.paths.app )+ "/img/" + current_file_name)
+        logging.debug(f'File deleted: {current_file_name}')
+
+        self.art_obj = self.draw_steps[self.last_step]
+        # Update last step 
+        self.last_step -=1
+        if len(str(self.last_step))==1:
+            self.last_step_str = '0' + str(self.last_step)
+        else:
+            self.last_step_str = str(self.last_step)
+        # Update next step
+        self.next_step_int-=1
+        if len(str(self.next_step_int))==1:
+            self.next_step = '0' + str(self.next_step_int)
+        else:
+            self.next_step = str(self.next_step_int)
+
+    def add_step(self):
         """Returns str value referring to the last step
         """
         draw_files = os.listdir(str(self.paths.app )+ "/img")
         draw_files_jpeg = [file for file in draw_files if re.search('.jpeg',file)]
-        print(draw_files_jpeg)
-
         draw_files_steps = [re.findall(r'\d+',file)[0] for file in draw_files_jpeg]
-        self.last_step = max(draw_files_steps)
-
-        next_step_int = int(self.last_step ) + 1
-        if len(str(next_step_int))==1:
-            self.next_step = '0' + str(next_step_int)
+        if draw_files_steps:
+            draw_files_steps = [int(i) for i in draw_files_steps]
+            self.last_step = max(draw_files_steps)
+            
+        if len(str(self.last_step))==1:
+            self.last_step_str = '0' + str(self.last_step)
         else:
-            self.next_step = str(next_step_int)
+            self.last_step_str = str(self.last_step)
 
+        # Next step
+        self.next_step_int = int(self.last_step ) + 1
+        if len(str(self.next_step_int))==1:
+            self.next_step = '0' + str(self.next_step_int)
+        else:
+            self.next_step = str(self.next_step_int)
 
+    def change_intensity(self,widget):
+        #print(self.intensity_slider.value)
+        pass
 
 class ExitHandler():
     def __call__(self, app):
@@ -317,6 +380,10 @@ class ExitHandler():
         # For example, save data, close connections, etc.
         print("Closing the application")
 
+        # Clean img dir
+        for file in os.listdir(str(app.paths.app )+ "/img/"):
+            if re.search('.jpeg',file):
+                os.remove(str(app.paths.app )+ "/img/" + file)
         # Return True to allow the application to exit
         return True
 
