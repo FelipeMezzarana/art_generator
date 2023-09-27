@@ -296,79 +296,55 @@ class App(toga.App):
         """
         self.current_steap = "background"
         self.art_obj.alter_background(intensity = self.intensity_slider.value)
-        self.add_step() # update last self.last_step
-        self.art_obj.save_img(str(self.paths.app )+ "/img/background" + self.next_step + ".jpeg")
-        # Save current state
-        self.draw_steps.append(self.art_obj)
-
+        self.add_step() 
+        self.art_obj.save_img(str(self.paths.app )+ "/img/background.jpeg")
+        # Update UI
         if self.create_art_view:
             self.draw_art_box.remove(self.create_art_view)
-        my_image = toga.Image(str(self.paths.app )+ "/img/background" + self.next_step + ".jpeg")
+        my_image = toga.Image(str(self.paths.app )+ "/img/background.jpeg")
         self.create_art_view = toga.ImageView(my_image,style=Pack(direction=COLUMN))
         self.draw_art_box.add(self.create_art_view)
 
     def get_last_state(self,widget):
         """Return create_art_view to last state.
         """
-        logging.debug(self.last_step)
-        if self.create_art_view and self.last_step > 0:
-            self.draw_art_box.remove(self.create_art_view)
-            last_file_name = self.current_steap + self.last_step_str + ".jpeg"
-            my_image = toga.Image(str(self.paths.app )+ "/img/" + last_file_name)
-            self.create_art_view = toga.ImageView(my_image,style=Pack(direction=COLUMN))
-            self.draw_art_box.add(self.create_art_view)
-            self.remove_step()
-        elif self.create_art_view:
-            self.draw_art_box.remove(self.create_art_view)
-            #self.remove_step()
 
-        logging.debug(self.last_step)
+        self.remove_step()
+       
+        if self.create_art_view:
+            self.draw_art_box.remove(self.create_art_view)
+            # Update UI
+            if self.art_obj:  
+                my_image = toga.Image(str(self.paths.app )+ "/img/"+self.current_steap+".jpeg")
+                self.create_art_view = toga.ImageView(my_image,style=Pack(direction=COLUMN))
+                self.draw_art_box.add(self.create_art_view)
+
         
     
     def remove_step(self):
         """Returns str value referring to the last step
         """
 
-        # Update art obj
-        current_file_name = self.current_steap + self.next_step + ".jpeg"
-        os.remove(str(self.paths.app )+ "/img/" + current_file_name)
-        logging.debug(f'File deleted: {current_file_name}')
+        if len(self.draw_steps) >1:
+            self.draw_steps.pop()
+            self.art_obj.img = self.draw_steps[-1]
+        elif len(self.draw_steps) ==1:
+            size = self.main_window.size
+            self.art_obj.img = ArtGenerator(
+                intensity = 0,
+                img_size =(int(size[0])+79,int(size[1]))).img
+            self.draw_steps.pop()
 
-        self.art_obj = self.draw_steps[self.last_step]
-        # Update last step 
-        self.last_step -=1
-        if len(str(self.last_step))==1:
-            self.last_step_str = '0' + str(self.last_step)
-        else:
-            self.last_step_str = str(self.last_step)
-        # Update next step
-        self.next_step_int-=1
-        if len(str(self.next_step_int))==1:
-            self.next_step = '0' + str(self.next_step_int)
-        else:
-            self.next_step = str(self.next_step_int)
+        if self.art_obj.img:
+            self.art_obj.save_img(str(self.paths.app )+ "/img/"+self.current_steap+".jpeg")
+            
 
     def add_step(self):
         """Returns str value referring to the last step
         """
-        draw_files = os.listdir(str(self.paths.app )+ "/img")
-        draw_files_jpeg = [file for file in draw_files if re.search('.jpeg',file)]
-        draw_files_steps = [re.findall(r'\d+',file)[0] for file in draw_files_jpeg]
-        if draw_files_steps:
-            draw_files_steps = [int(i) for i in draw_files_steps]
-            self.last_step = max(draw_files_steps)
-            
-        if len(str(self.last_step))==1:
-            self.last_step_str = '0' + str(self.last_step)
-        else:
-            self.last_step_str = str(self.last_step)
-
-        # Next step
-        self.next_step_int = int(self.last_step ) + 1
-        if len(str(self.next_step_int))==1:
-            self.next_step = '0' + str(self.next_step_int)
-        else:
-            self.next_step = str(self.next_step_int)
+        # Save current state 
+        current_state = self.art_obj.img.copy()
+        self.draw_steps.append(current_state)
 
     def change_intensity(self,widget):
         #print(self.intensity_slider.value)

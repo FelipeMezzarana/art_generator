@@ -32,7 +32,7 @@ class ArtGenerator():
     """
 
     
-    def __init__(self, bg_type:str = 'white', img_size:tuple = (600,400)):
+    def __init__(self, bg_type:str = 'white', img_size:tuple = (600,400),intensity:float = None):
         """initialize object and creates the base image
         * The image backgorund color will be selected according to "bg_type",
         bg_type 'light' or 'dark' creates a random background color
@@ -43,22 +43,25 @@ class ArtGenerator():
         """
         self.bg_type = bg_type
         
-        # Set background colors according to "bg_type"
-        if bg_type == 'white':
-            rgb_color = (255,255,255)
-        elif bg_type == 'black':
-            rgb_color = (0,0,0)
-        # Select a random background with high values for RGB colors (close to white)
-        elif bg_type == 'light':
-            rgb_color = tuple([random.randrange(235,255) for i in range(3)])
-        # Select a random background with low values for RGB colors (close to black)
-        elif bg_type == 'dark':
-            rgb_color = tuple([random.randrange(50,100) for i in range(3)])
+        if intensity:
+            self.img =  Image.new('RGB',img_size,color=self.create_color(intensity=intensity)) 
         else:
-            raise Exception("Arg bg_type must be 'white','black', 'light' or 'dark'")
+            # Set background colors according to "bg_type"
+            if bg_type == 'white':
+                rgb_color = (255,255,255)
+            elif bg_type == 'black':
+                rgb_color = (0,0,0)
+            # Select a random background with high values for RGB colors (close to white)
+            elif bg_type == 'light':
+                rgb_color = tuple([random.randrange(235,255) for i in range(3)])
+            # Select a random background with low values for RGB colors (close to black)
+            elif bg_type == 'dark':
+                rgb_color = tuple([random.randrange(50,100) for i in range(3)])
+            else:
+                raise Exception("Arg bg_type must be 'white','black', 'light' or 'dark'")
 
-        # Create a new image
-        self.img =  Image.new('RGB',img_size,color=rgb_color) 
+            # Create a new image
+            self.img =  Image.new('RGB',img_size,color=rgb_color) 
         
     def create_color(self,contrast:bool = True,intensity:float = None):
         """Return a random RGB color based on the background_type (bg_type)
