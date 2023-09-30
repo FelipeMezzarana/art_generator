@@ -107,18 +107,26 @@ class App(toga.App):
     def draw_art_windows(self,widget):
         """Create the draw art windows in self.draw_art_box.
         """
+
+        self.current_steap = "background_color"
+        self.steps_mapping = {
+            "background_color":lambda x: self.create_background(x),
+            "change_background":lambda x: self.change_background(x)
+        }
+
         # Lazy initialization
-        self.create_art_view = None 
+        self.create_art_view = None
+        self.intensity_slider = None
         self.last_step = 0
 
-        self.style = 'light'
-        # Initialize ArtGenerator Object
-        size = self.main_window.size
-        self.art_obj = ArtGenerator(
-            bg_type = 'white',
-            img_size =(int(size[0])+79,int(size[1]))
-            )
+        self.draw_art_buttons()
+        self.create_background()
 
+    def draw_art_buttons(self):
+        """Draw buttons according to step.
+        """
+
+        self.style = 'light'
         self.draw_art_box = toga.Box(
             children = [],
             style=Pack(
@@ -138,20 +146,23 @@ class App(toga.App):
             background_color = 'white',
             width = 50)
     
-        self.draw_buttons = toga.Box(
-            children = [      
-                toga.Label(
-                    "Choose a Background",
+
+        self.step_label =  toga.Label(
+                    self.current_steap.replace("_"," ").title(),
                     style=Pack(
                         padding=(7,0,10,10),
                         font_size=18,
                         alignment = 'right',
                         background_color= '#D9DDC4',
                         width = 200)
-                ),
+                )
+        
+        self.draw_buttons = toga.Box(
+            children = [      
+                self.step_label,
             toga.Button(
                     "+",
-                    on_press=lambda widget:self.change_background(widget),
+                    on_press=lambda widget:self.steps_mapping[self.current_steap](widget),
                     style=draw_pack
                 ),
             toga.Button(
@@ -161,7 +172,7 @@ class App(toga.App):
                 ),
             toga.Button(
                     "Next!",
-                    on_press=lambda widget:self.get_last_state(widget),
+                    on_press=lambda widget:self.next_step(widget),
                     style=draw_pack
                 )            ],
             style=Pack(
@@ -169,16 +180,18 @@ class App(toga.App):
                 background_color= '#D9DDC4'
                 )
             )
-        
+        if self.intensity_slider:
+            initial_value = self.intensity_slider.value
+        else:
+            initial_value = 3
         self.intensity_slider = toga.Slider(
             range=(0, 10),
-            value=5,
+            value=initial_value,
             on_change=self.change_intensity,
             style=Pack(
                 padding=(0,0,4,0)))
         self.draw_art_box.add(self.draw_buttons)
         self.draw_art_box.add(self.intensity_slider)
-
         self.main_window.content = self.draw_art_box
 
     def random_art_windows(self, widget):
@@ -289,22 +302,34 @@ class App(toga.App):
         my_image = toga.Image(self.paths.app / "test.jpeg")
         self.view = toga.ImageView(my_image,style=Pack(direction=COLUMN))
         self.random_art_box.add(self.view)
-        
+
+    def create_background(self, widget=None):
+        """Create new background and display in UI.
+        """
+
+        # Initialize ArtGenerator Object
+        size = self.main_window.size
+        if self.draw_steps:
+            self.art_obj = ArtGenerator(
+                img_size =(int(size[0])+79,int(size[1])),
+                intensity = self.intensity_slider.value
+                )
+        else:
+            self.art_obj = ArtGenerator(
+                img_size =(int(size[0])+79,int(size[1])),
+                intensity = 0
+                )
+
+        self.add_step() 
+
     def change_background(self, widget):
         """Alter background. 
         Color based on slider value.
         """
-        self.current_steap = "background"
+   
         self.art_obj.alter_background(intensity = self.intensity_slider.value)
         self.add_step() 
-        self.art_obj.save_img(str(self.paths.app )+ "/img/background.jpeg")
-        # Update UI
-        if self.create_art_view:
-            self.draw_art_box.remove(self.create_art_view)
-        my_image = toga.Image(str(self.paths.app )+ "/img/background.jpeg")
-        self.create_art_view = toga.ImageView(my_image,style=Pack(direction=COLUMN))
-        self.draw_art_box.add(self.create_art_view)
-
+  
     def get_last_state(self,widget):
         """Return create_art_view to last state.
         """
@@ -319,8 +344,27 @@ class App(toga.App):
                 self.create_art_view = toga.ImageView(my_image,style=Pack(direction=COLUMN))
                 self.draw_art_box.add(self.create_art_view)
 
-        
-    
+    def next_step(self,widget):
+        """Set next draw steap.
+        """
+
+        # Get current step
+        steps = list(self.steps_mapping.keys())
+        step_index = steps.index(self.current_steap)
+        # Alter step
+        if step_index + 1 >= len(steps):
+            logging.debug("This is the last step.")
+        else:
+            self.current_steap = steps[step_index + 1]
+            self.last_step = steps[step_index]
+            self.draw_art_buttons()
+        self.draw_steps = []
+
+        # Rebuild image
+        my_image = toga.Image(str(self.paths.app )+ "/img/"+self.last_step+".jpeg")
+        self.create_art_view = toga.ImageView(my_image,style=Pack(direction=COLUMN))
+        self.draw_art_box.add(self.create_art_view)
+
     def remove_step(self):
         """Returns str value referring to the last step
         """
@@ -328,23 +372,30 @@ class App(toga.App):
         if len(self.draw_steps) >1:
             self.draw_steps.pop()
             self.art_obj.img = self.draw_steps[-1]
+            self.art_obj.save_img(str(self.paths.app )+ "/img/"+self.current_steap+".jpeg")  
         elif len(self.draw_steps) ==1:
-            size = self.main_window.size
-            self.art_obj.img = ArtGenerator(
-                intensity = 0,
-                img_size =(int(size[0])+79,int(size[1]))).img
-            self.draw_steps.pop()
-
-        if self.art_obj.img:
-            self.art_obj.save_img(str(self.paths.app )+ "/img/"+self.current_steap+".jpeg")
-            
-
+            self.draw_steps = []
+            if self.current_steap == "background_color":
+                self.create_background() 
+            else:
+                my_image = toga.Image(str(self.paths.app )+ "/img/"+self.last_step+".jpeg")
+                self.create_art_view = toga.ImageView(my_image,style=Pack(direction=COLUMN))
+                self.draw_art_box.add(self.create_art_view)
+                        
     def add_step(self):
         """Returns str value referring to the last step
         """
         # Save current state 
         current_state = self.art_obj.img.copy()
         self.draw_steps.append(current_state)
+
+        self.art_obj.save_img(str(self.paths.app )+ "/img/"+self.current_steap+".jpeg")
+        # Update UI
+        if self.create_art_view:
+            self.draw_art_box.remove(self.create_art_view)
+        my_image = toga.Image(str(self.paths.app )+ "/img/"+self.current_steap+".jpeg")
+        self.create_art_view = toga.ImageView(my_image,style=Pack(direction=COLUMN))
+        self.draw_art_box.add(self.create_art_view)
 
     def change_intensity(self,widget):
         #print(self.intensity_slider.value)
